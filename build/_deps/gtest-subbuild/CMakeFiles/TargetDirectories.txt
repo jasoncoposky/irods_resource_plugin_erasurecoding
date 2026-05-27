@@ -1,3 +1,0 @@
-/home/darkfell/dev/irods_resource_plugin_erasurecoding/build/_deps/gtest-subbuild/CMakeFiles/gtest-populate.dir
-/home/darkfell/dev/irods_resource_plugin_erasurecoding/build/_deps/gtest-subbuild/CMakeFiles/edit_cache.dir
-/home/darkfell/dev/irods_resource_plugin_erasurecoding/build/_deps/gtest-subbuild/CMakeFiles/rebuild_cache.dir

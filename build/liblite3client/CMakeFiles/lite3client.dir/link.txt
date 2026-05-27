@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblite3client.a CMakeFiles/lite3client.dir/src/client.cpp.o CMakeFiles/lite3client.dir/src/smart_client.cpp.o CMakeFiles/lite3client.dir/src/async_client.cpp.o CMakeFiles/lite3client.dir/src/write_coordinator.cpp.o
-/usr/bin/ranlib liblite3client.a

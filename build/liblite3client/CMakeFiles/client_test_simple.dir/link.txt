@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/client_test_simple.dir/test/client_test_simple.cpp.o -o client_test_simple  -Wl,-rpath,/home/darkfell/dev/irods_resource_plugin_erasurecoding/build/_deps/libzmq-build/lib liblite3client.a ../lite3-cpp/liblite3-cpp.a ../_deps/libzmq-build/lib/libzmq.so.5.2.5 /usr/lib/x86_64-linux-gnu/libgnutls.so -lbsd -lrt 
