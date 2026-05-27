@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG "CMakeFiles/lite3-cpp_benchmark.dir/benchmark/benchmark.cpp.o" -o lite3-cpp_benchmark  liblite3-cpp.a liblite3-cpp.a 

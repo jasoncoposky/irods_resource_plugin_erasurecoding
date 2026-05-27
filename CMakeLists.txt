@@ -28,16 +28,13 @@ set(LITE3CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../lib/lite3-cpp)
 if(EXISTS ${LITE3CPP_DIR})
     add_subdirectory(${LITE3CPP_DIR} lite3-cpp)
     include_directories(${LITE3CPP_DIR}/include)
-else()
-    message(WARNING "lite3-cpp not found at ${LITE3CPP_DIR}. Control plane features will be disabled.")
 endif()
 
-# 4. liberasurecode (Assume system or fetch if needed)
-# For now, let's try to find it.
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBERASURECODE liberasurecode-1)
-if(NOT LIBERASURECODE_FOUND)
-    message(WARNING "liberasurecode not found. Phase 1.1.2 will require manual installation or FetchContent.")
+# 5. liblite3client (Local)
+set(LITE3CLIENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../lib/liblite3client)
+if(EXISTS ${LITE3CLIENT_DIR})
+    add_subdirectory(${LITE3CLIENT_DIR} liblite3client)
+    include_directories(${LITE3CLIENT_DIR}/include)
 endif()
 
 # --- Target: Erasure Coding Resource Plugin ---
@@ -53,18 +50,23 @@ set_target_properties(erasurecoding PROPERTIES
 
 target_include_directories(erasurecoding PRIVATE 
     include
-    ${LIBERASURECODE_INCLUDE_DIRS}
+    ${LIBERASURECODE_INCLUDE_DIR}
 )
 
 target_link_libraries(erasurecoding PRIVATE
     irods_common
     conveyor
-    ${LIBERASURECODE_LIBRARIES}
+    ${LIBERASURECODE_LIBRARY}
 )
 
 if(TARGET lite3cpp)
     target_link_libraries(erasurecoding PRIVATE lite3cpp)
     target_compile_definitions(erasurecoding PRIVATE HAS_LITE3CPP)
+endif()
+
+if(TARGET lite3client)
+    target_link_libraries(erasurecoding PRIVATE lite3client)
+    target_compile_definitions(erasurecoding PRIVATE HAS_LITE3CLIENT)
 endif()
 
 # --- Installation ---

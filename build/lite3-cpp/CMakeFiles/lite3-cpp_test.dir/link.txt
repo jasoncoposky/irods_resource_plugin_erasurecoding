@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG "CMakeFiles/lite3-cpp_test.dir/test/test_buffer_operations.cpp.o" "CMakeFiles/lite3-cpp_test.dir/test/test_json.cpp.o" "CMakeFiles/lite3-cpp_test.dir/test/test_observability.cpp.o" "CMakeFiles/lite3-cpp_test.dir/test/test_modern_api.cpp.o" -o lite3-cpp_test  liblite3-cpp.a ../lib/libgtest_main.a ../lib/libgtest.a 

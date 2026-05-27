@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/observability_example.dir/examples/observability_example.cpp.o -o observability_example  liblite3-cpp.a 
