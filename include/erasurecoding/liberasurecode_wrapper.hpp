@@ -66,6 +66,28 @@ namespace irods::erasurecoding {
         EncodedFragments& operator=(const EncodedFragments&) = delete;
     };
 
+    struct DecodedData {
+        char* data = nullptr;
+        uint64_t data_len = 0;
+        int desc = -1;
+
+        DecodedData(int descriptor) : desc(descriptor) {}
+
+        ~DecodedData() {
+            if (data) {
+                liberasurecode_decode_cleanup(desc, data);
+            }
+        }
+
+        std::span<const std::byte> span() const {
+            return {reinterpret_cast<const std::byte*>(data), static_cast<size_t>(data_len)};
+        }
+
+        // Disable copy
+        DecodedData(const DecodedData&) = delete;
+        DecodedData& operator=(const DecodedData&) = delete;
+    };
+
     class ErasureCoder {
     public:
         ErasureCoder(ec_backend_id_t backend_id, int k, int m) {
@@ -92,7 +114,31 @@ namespace irods::erasurecoding {
             return fragments;
         }
 
-        // Decode will be implemented in Phase 5
+        std::unique_ptr<DecodedData> decode(const std::vector<std::vector<std::byte>>& available_fragments) {
+            auto decoded = std::make_unique<DecodedData>(instance_->descriptor());
+            
+            // Prepare fragment pointers for C API
+            std::vector<char*> fragment_ptrs;
+            for (const auto& frag : available_fragments) {
+                if (!frag.empty()) {
+                    fragment_ptrs.push_back(const_cast<char*>(reinterpret_cast<const char*>(frag.data())));
+                }
+            }
+
+            int ret = liberasurecode_decode(instance_->descriptor(),
+                                            fragment_ptrs.data(),
+                                            static_cast<int>(fragment_ptrs.size()),
+                                            available_fragments[0].size(), // Assumes all fragments same size
+                                            1, // Force metadata checks
+                                            &decoded->data,
+                                            &decoded->data_len);
+            
+            if (ret != 0) {
+                throw LiberasurecodeError("liberasurecode_decode failed with error: " + std::to_string(ret));
+            }
+
+            return decoded;
+        }
         
     private:
         std::unique_ptr<LiberasurecodeInstance> instance_;
