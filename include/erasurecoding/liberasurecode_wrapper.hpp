@@ -119,16 +119,22 @@ namespace irods::erasurecoding {
             
             // Prepare fragment pointers for C API
             std::vector<char*> fragment_ptrs;
+            uint64_t fragment_len = 0;
             for (const auto& frag : available_fragments) {
                 if (!frag.empty()) {
+                    if (fragment_len == 0) fragment_len = frag.size();
                     fragment_ptrs.push_back(const_cast<char*>(reinterpret_cast<const char*>(frag.data())));
                 }
+            }
+
+            if (fragment_ptrs.empty()) {
+                throw LiberasurecodeError("No fragments provided to decode");
             }
 
             int ret = liberasurecode_decode(instance_->descriptor(),
                                             fragment_ptrs.data(),
                                             static_cast<int>(fragment_ptrs.size()),
-                                            available_fragments[0].size(), // Assumes all fragments same size
+                                            fragment_len,
                                             1, // Force metadata checks
                                             &decoded->data,
                                             &decoded->data_len);

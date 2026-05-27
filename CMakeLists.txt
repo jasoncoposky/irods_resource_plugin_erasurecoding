@@ -69,6 +69,28 @@ if(TARGET lite3client)
     target_compile_definitions(erasurecoding PRIVATE HAS_LITE3CLIENT)
 endif()
 
+# --- Unit Tests ---
+enable_testing()
+add_executable(test_erasurecoder test/test_erasurecoder.cpp)
+target_include_directories(test_erasurecoder PRIVATE include ${LIBERASURECODE_INCLUDE_DIR})
+target_link_libraries(test_erasurecoder PRIVATE 
+    gtest_main 
+    ${LIBERASURECODE_LIBRARY}
+)
+add_test(NAME test_erasurecoder COMMAND test_erasurecoder)
+
+add_executable(test_plugin_simulation test/test_plugin_simulation.cpp src/liberasurecoding_resource.cpp)
+target_include_directories(test_plugin_simulation PRIVATE include ${LIBERASURECODE_INCLUDE_DIR})
+target_link_libraries(test_plugin_simulation PRIVATE 
+    gtest_main 
+    irods_server
+    irods_common 
+    conveyor
+    fmt
+    ${LIBERASURECODE_LIBRARY}
+)
+add_test(NAME test_plugin_simulation COMMAND test_plugin_simulation)
+
 # --- Installation ---
 install(TARGETS erasurecoding
     LIBRARY DESTINATION /usr/lib/irods/plugins/resources

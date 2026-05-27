@@ -150,7 +150,8 @@ namespace {
             conv_cfg.ops.pwrite = ec_pwrite;
             conv_cfg.ops.pread = ec_pread;
             conv_cfg.ops.lseek = ec_lseek;
-            conv_cfg.write_capacity = cfg->chunk_size / cfg->k;
+            conv_cfg.write_capacity = (cfg->chunk_size / cfg->k) + 80; // Account for EC header
+            conv_cfg.read_capacity = conv_cfg.write_capacity;
             auto res = libconveyor::v2::Conveyor::create(conv_cfg);
             if (!res) return ERROR(SYS_INTERNAL_ERR, "Failed to create pipeline");
             state->pipelines.push_back(std::make_unique<libconveyor::v2::Conveyor>(std::move(res.value())));
@@ -276,7 +277,9 @@ namespace {
         }
 
         // Phase 5.3: Parallel Read and Reassembly
-        size_t frag_len = cfg->chunk_size / cfg->k;
+        constexpr size_t header_size = 80; // sizeof(fragment_header_t)
+        size_t frag_len = (cfg->chunk_size / cfg->k) + header_size;
+        
         std::vector<std::vector<std::byte>> all_fragments(cfg->k + cfg->m);
         int valid_fragment_count = 0;
         std::vector<int> missing_data_indices;
@@ -334,16 +337,21 @@ namespace {
 
         // 4. Reassemble data into output buffer
         char* out_ptr = static_cast<char*>(_buf);
+
         if (decoded_holder) {
-            // Use reconstructed data
+            // Use reconstructed data (already stripped of headers by decode)
             size_t to_copy = std::min(final_data.size(), static_cast<size_t>(_len));
             std::memcpy(out_ptr, final_data.data(), to_copy);
         } else {
-            // Reassemble from valid data fragments
+            // Reassemble from valid data fragments (must skip headers!)
             size_t total_read = 0;
             for (int i = 0; i < cfg->k && total_read < static_cast<size_t>(_len); ++i) {
-                size_t to_copy = std::min(all_fragments[i].size(), static_cast<size_t>(_len) - total_read);
-                std::memcpy(out_ptr + total_read, all_fragments[i].data(), to_copy);
+                if (all_fragments[i].size() <= header_size) continue;
+                
+                size_t actual_data_in_frag = all_fragments[i].size() - header_size;
+                size_t to_copy = std::min(actual_data_in_frag, static_cast<size_t>(_len) - total_read);
+                
+                std::memcpy(out_ptr + total_read, all_fragments[i].data() + header_size, to_copy);
                 total_read += to_copy;
             }
         }
